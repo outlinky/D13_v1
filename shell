@@ -1,3 +1,5 @@
+NewsPortal/news/apps.py настройки redis
+
 Создать двух пользователей (с помощью метода User.objects.create_user).
   >>> user1 = User.objects.create_user(username='Alex')
   >>> user2 = User.objects.create_user(username='Lena')
