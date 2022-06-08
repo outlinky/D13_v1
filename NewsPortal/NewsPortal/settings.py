@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-v)!*+z++1n=g=g)9d9+o628rae)7k5dj=!x*v_74ary2tgjh5j
 # SECURITY WARNING: don't run with debug turned on in production!
 # Включает режим отладки. Важно! При запуске реального проекта в работу
 # нужно отключать, прописав "False"
-DEBUG = True
+DEBUG = False
 
 # Локальный адрес проекта
 ALLOWED_HOSTS = ['127.0.0.1']
@@ -86,7 +86,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
     'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
 ]
 
@@ -252,3 +251,154 @@ CACHES = {
 # посредством электронной почты. Напоследок мы указываем, что верификация почты отсутствует. Обычно на почту
 # отправляется подтверждение аккаунта, после подтверждения которого восстанавливается полная функциональность
 # учетной записи. Для тестового примера нам не обязательно это делать.
+
+
+# Настройка логирования (Ведения журнала)
+LOGGING = {
+    'version': 1,
+    'disable_existing_logger': False,  # вкл/выкл Django DEBUG (лучше всегда писать - False)
+    # ЛОГЕРЫ
+    'loggers': {
+        # логер вывода сообщений в консоль и файл general
+        'django': {
+            # указываем обработчики
+            'handlers': ['console_WARNING', 'console_ERROR_CRITICAL', 'general'],
+            'level': 'DEBUG',
+        },
+        'django.request': {
+            'handlers': ['errors', 'mail_admins'],
+            'level': 'DEBUG',
+        },
+        'django.server': {
+            'handlers': ['errors', 'mail_admins'],
+            'level': 'DEBUG',
+        },
+        'django.template': {
+            'handlers': ['errors'],
+            'level': 'DEBUG',
+        },
+        'django.db_backends': {
+            'handlers': ['errors'],
+            'level': 'DEBUG',
+        },
+        'django.security': {
+            'handlers': ['general'],
+            'level': 'DEBUG',
+        },
+    },
+    # ОБРАБОТЧИКИ
+    'handlers': {
+        # обработчик вывода сообщений уровня DEBUG в консоль
+        'console_DEBUG': {
+            # задаем уровень
+            'level': 'DEBUG',
+            # вывод сообщений в консоль
+            'class': 'logging.StreamHandler',
+            # указываем форматер
+            'formatter': 'formatter_DEBUG',
+            # задаем фильтр
+            'filters': ['require_debug_true'],
+        },
+        # обработчик вывода сообщений уровня WARNING в консоль
+        'console_WARNING': {
+            'level': 'WARNING',
+            'class': 'logging.StreamHandler',
+            'formatter': 'formatter_WARNING',
+            'filters': ['require_debug_true'],
+        },
+        # обработчик вывода сообщений уровня ERROR и CRITICAL в консоль
+        'console_ERROR_CRITICAL': {
+            'level': 'ERROR',
+            'class': 'logging.StreamHandler',
+            'formatter': 'formatter_ERROR_CRITICAL',
+            'filters': ['require_debug_true'],
+        },
+        # обработчик вывода сообщений уровня INFO в файл general.log
+        'general': {
+            # задаем уровень
+            'level': 'INFO',
+            # настраиваем запись в файл
+            'class': 'logging.FileHandler',
+            # указываем файл
+            'filename': 'general.log',
+            # указываем форматер
+            'formatter': 'formatter_general',
+            # задаем фильтр
+            'filters': ['require_debug_false'],
+        },
+        # обработчик вывода сообщений уровня ERROR и выше в файл errors.log
+        'errors': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': 'errors.log',
+            'formatter': 'formatter_error',
+        },
+        # обработчик отправки сообщений уровня ERRORS и CRITICAL на почту админу
+        'mail_admins': {
+            # указываем уровень
+            'level': 'ERROR',
+            # настраиваем отправку
+            'class': 'django.utils.log.AdminEmailHandler',
+            # указываем фильтр
+            'filters': ['require_debug_false'],
+            # указываем форматер
+            'formatter': 'formatter_mail',
+        },
+    },
+    # ФОРМАТИРОВЩИКИ
+    'formatters': {
+        # форматировщик для вывода сообщений DEBUG в консоль
+        'formatter_DEBUG': {
+            # выводятся все сообщения уровня DEBUG и выше, включающие время, уровень сообщения, сообщения
+            'format': '{asctime} {levelname} {message}',
+            'datetime': '%Y.%m.%d %H.%M.S',
+            'style': '{',
+        },
+        # форматировщик для вывода в консоль сообщений WARNING
+        'formatter_WARNING': {
+            # дополнительно должен выводиться путь к источнику события
+            'format': '{asctime} {levelname} {pathname} {message}',
+            'datetime': '%Y.%m.%d %H.%M.S',
+            'style': '{'
+        },
+        # форматировщик для вывода в консоль сообщений ERROR и CRITICAL
+        'formatter_ERROR_CRITICAL': {
+            # для сообщений ERROR и CRITICAL еще должен выводить стэк ошибки
+            'format': '{asctime} {levelname} {pathname} {message} {exc_info}',
+            'datetime': '%Y.%m.%d %H.%M.S',
+            'style': '{'
+        },
+        # форматировщик для вывода сообщений в файл general.log
+        'formatter_general': {
+            # время, уровень логирования, модуль, сообщение
+            'format': '{asctime} {levelname} {module} {message}',
+            'datetime': '%Y.%m.%d %H.%M.S',
+            'style': '{'
+        },
+        # форматировщик вывода сообщений в файл errors.log
+        'formatter_error': {
+            # время, уровень логирования, сообщение, путь к источнику, стек ошибки
+            'format': '{asctime} {levelname} {message} {pathname} {exc_info}',
+            'datetime': '%Y.%m.%d %H.%M.S',
+            'style': '{'
+        },
+        # форматировщик для отправки сообщений на почту админу
+        'formatter_mail': {
+            # время, уровень логирования, сообщение, путь к источнику
+            'format': '{asctime} {levelname} {message} {pathname}',
+            'datetime': '%Y.%m.%d %H.%M.S',
+            'style': '{'
+        },
+    },
+    # ФИЛЬТРЫ
+    'filters': {
+        # фильтр, который пропустит сообщения если режим DEBUG вкл
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+        # фильтр, который пропустит сообщения если режим DEBUG выкл
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+    },
+}
